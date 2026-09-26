@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>歌手 - CorPlayer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:#0a0a0f;color:#fff;min-height:100vh}
+.header{background:linear-gradient(180deg,#1a1a2e,#0a0a0f);padding:40px 20px 30px;text-align:center}
+.avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#e94560,#533483);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:40px}
+.name{font-size:24px;font-weight:bold;margin-bottom:8px}
+.intro{font-size:14px;color:#aaa}
+.songs{padding:16px}
+.songs h3{font-size:17px;margin-bottom:14px}
+.song-item{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid #1a1a2e;cursor:pointer}
+.song-item .idx{width:30px;text-align:center;color:#666}
+.song-item .info{flex:1}
+.song-item .title{font-size:15px;margin-bottom:3px}
+.song-item .album{font-size:12px;color:#888}
+.song-item .play{color:#e94560;font-size:20px;padding:0 10px}
+.back{position:absolute;top:16px;left:16px;font-size:24px;cursor:pointer;color:#fff;text-decoration:none}
+</style>
+</head>
+<body>
+<a href="javascript:history.back()" class="back">←</a>
+<div class="header">
+  <div class="avatar" id="avatar">🎤</div>
+  <div class="name" id="singerName">加载中...</div>
+  <div class="intro" id="singerIntro"></div>
+</div>
+<div class="songs">
+  <h3>全部歌曲</h3>
+  <div id="songList"></div>
+</div>
+<script>
+const BASE = location.origin + location.pathname.replace(/\/[^/]*$/,'/');
+const name = decodeURIComponent(window.location.search.substring(1)||'');
+document.getElementById('singerName').textContent = name;
+Promise.all([fetch(BASE+'data/singers.json').then(r=>r.json()),fetch(BASE+'data/songs.json').then(r=>r.json())]).then(([singers,songs])=>{
+  const singer = singers.find(s=>s.name===name);
+  if(singer) document.getElementById('singerIntro').textContent = singer.intro||'';
+  const singerSongs = songs.filter(s=>s.singer===name);
+  document.getElementById('songList').innerHTML = singerSongs.map((s,i)=>`
+    <div class="song-item" onclick="play('${s.coreUrl}')">
+      <span class="idx">${i+1}</span>
+      <div class="info"><div class="title">${s.name}</div><div class="album">${s.album||''}</div></div>
+      <span class="play">▶</span>
+    </div>`).join('');
+}).catch(()=>{document.getElementById('singerName').textContent='加载失败'});
+function play(coreUrl){
+  let url = coreUrl;
+  if(!url.startsWith('http')) url = BASE + url;
+  if(!url.endsWith('/')) url += '/';
+  window.location.href = 'cormusic://' + url;
+}
+</script>
+</body>
+</html>
