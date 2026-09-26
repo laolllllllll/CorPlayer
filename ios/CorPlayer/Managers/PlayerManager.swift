@@ -138,7 +138,7 @@ class PlayerManager: NSObject {
         }
     }
 
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueObservationKey : Any]?, context: UnsafeMutableRawPointer?) {
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueObservedChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "status", let item = object as? AVPlayerItem, item.status == .failed {
             print("PlayerManager: play failed - \(item.error?.localizedDescription ?? "unknown")")
         }
