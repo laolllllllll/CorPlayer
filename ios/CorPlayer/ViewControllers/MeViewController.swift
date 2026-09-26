@@ -75,14 +75,15 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
             cell.configure(song: localSongs[indexPath.row])
             return cell
         }
-        let cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
-        cell.backgroundColor = .secondarySystemGroupedBackground
-        cell.textLabel?.text = "CorPlayer"
-        cell.textLabel?.textColor = .label
-        cell.detailTextLabel?.text = "v2.0"
-        cell.detailTextLabel?.textColor = .secondaryLabel
-        cell.selectionStyle = .none
-        return cell
+        if indexPath.section == 2 {
+            let cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
+            cell.backgroundColor = .secondarySystemGroupedBackground
+            cell.textLabel?.text = "CorPlayer"
+            cell.textLabel?.textColor = .label
+            cell.detailTextLabel?.text = "v2.0"
+            cell.detailTextLabel?.textColor = .secondaryLabel
+            cell.selectionStyle = .none
+            return cell
         }
         if indexPath.section == 3 {
             if indexPath.row == 0 {
