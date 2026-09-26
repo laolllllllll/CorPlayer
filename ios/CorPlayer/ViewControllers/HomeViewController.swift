@@ -60,7 +60,18 @@ class HomeViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
     private func handleCormusicURL(_ url: URL) {
         // cormusic://https://example.com/song.core/
         var raw = url.absoluteString
-        raw = raw.replacingOccurrences(of: "cormusic://", with: "")
+        if raw.hasPrefix("cormusic://") {
+            raw = String(raw.dropFirst("cormusic://".count))
+        }
+        // 先解码百分号，得到原始URL（含中文）
+        if let decoded = raw.removingPercentEncoding {
+            raw = decoded
+        }
+        // 重新正确编码URL（中文→百分号，保留://等特殊字符）
+        let allowed = CharacterSet.urlFragmentAllowed.union(.urlQueryAllowed).union(.urlPathAllowed).union(.urlHostAllowed).union(.urlUserAllowed).union(.urlPasswordAllowed)
+        if let encoded = raw.addingPercentEncoding(withAllowedCharacters: allowed) {
+            raw = encoded
+        }
         // 确保以/结尾
         if !raw.hasSuffix("/") { raw += "/" }
 

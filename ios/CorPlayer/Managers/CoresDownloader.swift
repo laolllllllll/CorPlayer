@@ -142,8 +142,17 @@ class CoresDownloader {
 
     // MARK: - 基础下载
     private func downloadFile(url: String, progress: ((Double) -> Void)? = nil, completion: @escaping (Result<Data, Error>) -> Void) {
-        guard let urlObj = URL(string: url) else {
-            completion(.failure(NSError(domain: "CoresDownloader", code: -3, userInfo: [NSLocalizedDescriptionKey: "无效URL"])))
+        // 确保URL正确编码（处理中文等特殊字符）
+        var safeUrl = url
+        if let decoded = safeUrl.removingPercentEncoding {
+            safeUrl = decoded
+        }
+        let allowed = CharacterSet.urlFragmentAllowed.union(.urlQueryAllowed).union(.urlPathAllowed).union(.urlHostAllowed).union(.urlUserAllowed).union(.urlPasswordAllowed)
+        if let encoded = safeUrl.addingPercentEncoding(withAllowedCharacters: allowed) {
+            safeUrl = encoded
+        }
+        guard let urlObj = URL(string: safeUrl) else {
+            completion(.failure(NSError(domain: "CoresDownloader", code: -3, userInfo: [NSLocalizedDescriptionKey: "无效URL: \(safeUrl)"])))
             return
         }
         let session = URLSession.shared

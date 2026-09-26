@@ -23,7 +23,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     private func handleURL(_ url: URL) {
         if url.scheme == "cormusic" {
-            var raw = url.absoluteString.replacingOccurrences(of: "cormusic://", with: "")
+            var raw = url.absoluteString
+            if raw.hasPrefix("cormusic://") {
+                raw = String(raw.dropFirst("cormusic://".count))
+            }
+            if let decoded = raw.removingPercentEncoding {
+                raw = decoded
+            }
+            let allowed = CharacterSet.urlFragmentAllowed.union(.urlQueryAllowed).union(.urlPathAllowed).union(.urlHostAllowed).union(.urlUserAllowed).union(.urlPasswordAllowed)
+            if let encoded = raw.addingPercentEncoding(withAllowedCharacters: allowed) {
+                raw = encoded
+            }
             if !raw.hasSuffix("/") { raw += "/" }
             CoresDownloader.shared.resolveCore(url: raw) { result in
                 DispatchQueue.main.async {
