@@ -120,14 +120,11 @@ class PlayerManager: NSObject {
                 self.timeObserver = nil
             }
             NotificationCenter.default.removeObserver(self)
-            self.playerItem?.removeObserver(self, forKeyPath: "status")
-            self.playerItem?.removeObserver(self, forKeyPath: "duration")
 
             self.player?.pause()
             self.playerItem = AVPlayerItem(url: url)
             self.player = AVPlayer(playerItem: self.playerItem)
 
-            self.playerItem?.addObserver(self, forKeyPath: "status", options: [.new], context: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(self.songDidEnd), name: .AVPlayerItemDidPlayToEndTime, object: self.playerItem)
 
             self.player?.play()
@@ -135,12 +132,6 @@ class PlayerManager: NSObject {
             self.setupTimeObserver()
             self.onSongChange?(song)
             self.onStateChange?(true)
-        }
-    }
-
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueObservedChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if keyPath == "status", let item = object as? AVPlayerItem, item.status == .failed {
-            print("PlayerManager: play failed - \(item.error?.localizedDescription ?? "unknown")")
         }
     }
 
