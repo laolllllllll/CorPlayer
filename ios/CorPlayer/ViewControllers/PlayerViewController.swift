@@ -94,7 +94,7 @@ class PlayerViewController: UIViewController {
         lrcTableView.register(LrcCell.self, forCellReuseIdentifier: "LrcCell")
         lrcTableView.isHidden = true
         lrcTableView.alpha = 0
-        lrcTableView.contentInset = UIEdgeInsets(top: coverSize / 2 - 30, bottom: coverSize / 2 - 30, left: 0, right: 0)
+        lrcTableView.contentInset = UIEdgeInsets(top: coverSize / 2 - 30, left: 0, bottom: coverSize / 2 - 30, right: 0)
         let lrcTap = UITapGestureRecognizer(target: self, action: #selector(toggleLrc))
         lrcTableView.addGestureRecognizer(lrcTap)
         view.addSubview(lrcTableView)
@@ -242,7 +242,7 @@ class PlayerViewController: UIViewController {
 
     private func scrollToCurrentLrc(animated: Bool) {
         guard currentLrcIndex >= 0, currentLrcIndex < lrcLines.count else { return }
-        lrcTableView.scrollToRow(at: IndexPath(row: currentLrcIndex, section: 0), at: .center, animated: animated)
+        lrcTableView.scrollToRow(at: IndexPath(row: currentLrcIndex, section: 0), at: .middle, animated: animated)
     }
 
     private func setupObservers() {
