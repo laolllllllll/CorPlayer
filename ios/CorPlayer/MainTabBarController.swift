@@ -27,15 +27,15 @@ class MainTabBarController: UITabBarController {
 
     private func setupTabBarAppearance() {
         let appearance = UITabBarAppearance()
-        appearance.configureWithDefaultBackground()
-        appearance.backgroundEffect = UIBlurEffect(style: .systemMaterial)
-        appearance.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.8)
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        appearance.backgroundColor = UIColor(red: 0.05, green: 0.05, blue: 0.08, alpha: 0.7)
         tabBar.standardAppearance = appearance
         if #available(iOS 15.0, *) {
             tabBar.scrollEdgeAppearance = appearance
         }
         tabBar.tintColor = .systemPink
-        tabBar.unselectedItemTintColor = .secondaryLabel
+        tabBar.unselectedItemTintColor = UIColor.white.withAlphaComponent(0.5)
     }
 
     private func setupPlayerBar() {

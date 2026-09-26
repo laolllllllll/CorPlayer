@@ -7,7 +7,7 @@ class QueueViewController: UIViewController, UITableViewDataSource, UITableViewD
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "播放队列"
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .black
         setupTableView()
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "清空", style: .plain, target: self, action: #selector(clearQueue))
         navigationItem.rightBarButtonItem?.tintColor = .systemPink
@@ -19,11 +19,11 @@ class QueueViewController: UIViewController, UITableViewDataSource, UITableViewD
     }
 
     private func setupTableView() {
-        tableView = UITableView(frame: view.bounds, style: .insetGrouped)
+        tableView = UITableView(frame: view.bounds, style: .plain)
         tableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.backgroundColor = .systemGroupedBackground
+        tableView.backgroundColor = .black
         tableView.rowHeight = 64
         tableView.register(QueueCell.self, forCellReuseIdentifier: "QueueCell")
         view.addSubview(tableView)
@@ -83,7 +83,7 @@ class QueueCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        backgroundColor = .secondarySystemGroupedBackground
+        backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.14, alpha: 0.8)
         selectionStyle = .none
 
         coverView.frame = CGRect(x: 16, y: 10, width: 44, height: 44)
@@ -95,12 +95,12 @@ class QueueCell: UITableViewCell {
 
         titleLabel.frame = CGRect(x: 72, y: 12, width: 200, height: 22)
         titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        titleLabel.textColor = .label
+        titleLabel.textColor = .white
         contentView.addSubview(titleLabel)
 
         artistLabel.frame = CGRect(x: 72, y: 36, width: 200, height: 18)
         artistLabel.font = .systemFont(ofSize: 13)
-        artistLabel.textColor = .secondaryLabel
+        artistLabel.textColor = UIColor.white.withAlphaComponent(0.6)
         contentView.addSubview(artistLabel)
 
         playingIndicator.frame = CGRect(x: UIScreen.main.bounds.width - 60, y: 20, width: 24, height: 24)

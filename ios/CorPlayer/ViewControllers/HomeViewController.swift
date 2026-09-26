@@ -12,7 +12,7 @@ class HomeViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, 
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "首页"
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .black
         setupWebView()
         loadHome()
     }
@@ -26,7 +26,7 @@ class HomeViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, 
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         webView.navigationDelegate = self
         webView.uiDelegate = self
-        webView.backgroundColor = .systemBackground
+        webView.backgroundColor = .black
         webView.scrollView.bounces = false
         webView.isOpaque = false
         view.addSubview(webView)

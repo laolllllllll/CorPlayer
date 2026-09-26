@@ -8,7 +8,7 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "我的"
-        view.backgroundColor = .systemGroupedBackground
+        view.backgroundColor = .black
         setupTableView()
     }
 
@@ -19,11 +19,11 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
     }
 
     private func setupTableView() {
-        tableView = UITableView(frame: view.bounds, style: .insetGrouped)
+        tableView = UITableView(frame: view.bounds, style: .plain)
         tableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.backgroundColor = .systemGroupedBackground
+        tableView.backgroundColor = .black
         tableView.rowHeight = 60
         tableView.register(LocalSongCell.self, forCellReuseIdentifier: "LocalSongCell")
         view.addSubview(tableView)
@@ -54,9 +54,9 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.section == 0 {
             let cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
-            cell.backgroundColor = .secondarySystemGroupedBackground
+            cell.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.14, alpha: 0.8)
             cell.textLabel?.text = "播放模式"
-            cell.textLabel?.textColor = .label
+            cell.textLabel?.textColor = .white
             cell.detailTextLabel?.text = playModeText()
             cell.detailTextLabel?.textColor = .systemPink
             cell.accessoryType = .disclosureIndicator
@@ -65,9 +65,9 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
         if indexPath.section == 1 {
             if localSongs.isEmpty {
                 let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
-                cell.backgroundColor = .secondarySystemGroupedBackground
+                cell.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.14, alpha: 0.8)
                 cell.textLabel?.text = "暂无本地音乐"
-                cell.textLabel?.textColor = .secondaryLabel
+                cell.textLabel?.textColor = UIColor.white.withAlphaComponent(0.5)
                 cell.textLabel?.textAlignment = .center
                 return cell
             }
@@ -77,20 +77,20 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
         }
         if indexPath.section == 2 {
             let cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
-            cell.backgroundColor = .secondarySystemGroupedBackground
+            cell.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.14, alpha: 0.8)
             cell.textLabel?.text = "CorPlayer"
-            cell.textLabel?.textColor = .label
+            cell.textLabel?.textColor = .white
             cell.detailTextLabel?.text = "v2.0"
-            cell.detailTextLabel?.textColor = .secondaryLabel
+            cell.detailTextLabel?.textColor = UIColor.white.withAlphaComponent(0.6)
             cell.selectionStyle = .none
             return cell
         }
         if indexPath.section == 3 {
             if indexPath.row == 0 {
                 let cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
-                cell.backgroundColor = .secondarySystemGroupedBackground
+                cell.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.14, alpha: 0.8)
                 cell.textLabel?.text = "首页链接"
-                cell.textLabel?.textColor = .label
+                cell.textLabel?.textColor = .white
                 let currentURL = UserDefaults.standard.string(forKey: "corplayer_home_url") ?? "默认"
                 cell.detailTextLabel?.text = currentURL == "https://laolllllllll.github.io/CorPlayer/app/index.html" ? "默认" : "自定义"
                 cell.detailTextLabel?.textColor = .systemPink
@@ -98,7 +98,7 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
                 return cell
             } else {
                 let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
-                cell.backgroundColor = .secondarySystemGroupedBackground
+                cell.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.14, alpha: 0.8)
                 cell.textLabel?.text = "恢复默认首页"
                 cell.textLabel?.textColor = .systemRed
                 cell.textLabel?.textAlignment = .center
@@ -188,7 +188,7 @@ class LocalSongCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        backgroundColor = .secondarySystemGroupedBackground
+        backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.14, alpha: 0.8)
         selectionStyle = .none
 
         coverView.frame = CGRect(x: 16, y: 8, width: 44, height: 44)
@@ -200,12 +200,12 @@ class LocalSongCell: UITableViewCell {
 
         titleLabel.frame = CGRect(x: 72, y: 10, width: 200, height: 22)
         titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        titleLabel.textColor = .label
+        titleLabel.textColor = .white
         contentView.addSubview(titleLabel)
 
         artistLabel.frame = CGRect(x: 72, y: 34, width: 200, height: 18)
         artistLabel.font = .systemFont(ofSize: 13)
-        artistLabel.textColor = .secondaryLabel
+        artistLabel.textColor = UIColor.white.withAlphaComponent(0.6)
         contentView.addSubview(artistLabel)
     }
     required init?(coder: NSCoder) { fatalError() }
