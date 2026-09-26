@@ -1,7 +1,3 @@
 [
-  {"id": "song1", "name": "晴天", "singer": "周杰伦", "album": "叶惠美", "coreUrl": "cores/周杰伦-晴天.core/"},
-  {"id": "song2", "name": "七里香", "singer": "周杰伦", "album": "七里香", "coreUrl": "cores/周杰伦-七里香.core/"},
-  {"id": "song3", "name": "稻香", "singer": "周杰伦", "album": "魔杰座", "coreUrl": "cores/周杰伦-稻香.core/"},
-  {"id": "song4", "name": "江南", "singer": "林俊杰", "album": "第二天堂", "coreUrl": "cores/林俊杰-江南.core/"},
-  {"id": "song5", "name": "修炼爱情", "singer": "林俊杰", "album": "因你而在", "coreUrl": "cores/林俊杰-修炼爱情.core/"}
+  {"id": "song1", "name": "枫", "singer": "周杰伦", "album": "十一月的萧邦", "coreUrl": "cores/周杰伦-枫.core/"}
 ]
