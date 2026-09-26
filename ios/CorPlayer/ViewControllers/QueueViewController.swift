@@ -1,16 +1,16 @@
 import UIKit
 
 class QueueViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-
     private var tableView: UITableView!
     private let player = PlayerManager.shared
 
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "播放队列"
-        view.backgroundColor = .black
+        view.backgroundColor = .systemBackground
         setupTableView()
-        setupObservers()
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "清空", style: .plain, target: self, action: #selector(clearQueue))
+        navigationItem.rightBarButtonItem?.tintColor = .systemPink
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -19,24 +19,14 @@ class QueueViewController: UIViewController, UITableViewDataSource, UITableViewD
     }
 
     private func setupTableView() {
-        tableView = UITableView(frame: view.bounds, style: .plain)
+        tableView = UITableView(frame: view.bounds, style: .insetGrouped)
         tableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.backgroundColor = .black
-        tableView.separatorColor = .darkGray
-        tableView.rowHeight = 60
+        tableView.backgroundColor = .systemGroupedBackground
+        tableView.rowHeight = 64
         tableView.register(QueueCell.self, forCellReuseIdentifier: "QueueCell")
         view.addSubview(tableView)
-
-        // 导航栏按钮
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "清空", style: .plain, target: self, action: #selector(clearQueue))
-    }
-
-    private func setupObservers() {
-        player.onSongChange = { [weak self] _ in
-            DispatchQueue.main.async { self?.tableView.reloadData() }
-        }
     }
 
     @objc private func clearQueue() {
@@ -49,9 +39,12 @@ class QueueViewController: UIViewController, UITableViewDataSource, UITableViewD
         present(alert, animated: true)
     }
 
-    // MARK: - UITableView
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return player.queue.count
+    }
+
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return player.queue.isEmpty ? nil : "\(player.queue.count) 首歌曲"
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -82,48 +75,59 @@ class QueueViewController: UIViewController, UITableViewDataSource, UITableViewD
     }
 }
 
-// MARK: - Cell
 class QueueCell: UITableViewCell {
-    private let idxLabel = UILabel()
+    private let coverView = UIImageView()
     private let titleLabel = UILabel()
     private let artistLabel = UILabel()
-    private let localBadge = UILabel()
+    private let playingIndicator = UIActivityIndicatorView(style: .medium)
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        backgroundColor = .black
+        backgroundColor = .secondarySystemGroupedBackground
         selectionStyle = .none
 
-        idxLabel.frame = CGRect(x: 12, y: 0, width: 30, height: 60)
-        idxLabel.font = .systemFont(ofSize: 14)
-        idxLabel.textColor = .darkGray
-        idxLabel.textAlignment = .center
-        contentView.addSubview(idxLabel)
+        coverView.frame = CGRect(x: 16, y: 10, width: 44, height: 44)
+        coverView.layer.cornerRadius = 8
+        coverView.clipsToBounds = true
+        coverView.backgroundColor = .systemGray4
+        coverView.contentMode = .scaleAspectFill
+        contentView.addSubview(coverView)
 
-        titleLabel.frame = CGRect(x: 50, y: 10, width: 250, height: 22)
-        titleLabel.font = .systemFont(ofSize: 15)
-        titleLabel.textColor = .white
+        titleLabel.frame = CGRect(x: 72, y: 12, width: 200, height: 22)
+        titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        titleLabel.textColor = .label
         contentView.addSubview(titleLabel)
 
-        artistLabel.frame = CGRect(x: 50, y: 34, width: 200, height: 18)
-        artistLabel.font = .systemFont(ofSize: 12)
-        artistLabel.textColor = .gray
+        artistLabel.frame = CGRect(x: 72, y: 36, width: 200, height: 18)
+        artistLabel.font = .systemFont(ofSize: 13)
+        artistLabel.textColor = .secondaryLabel
         contentView.addSubview(artistLabel)
 
-        localBadge.frame = CGRect(x: UIScreen.main.bounds.width - 60, y: 20, width: 45, height: 20)
-        localBadge.font = .systemFont(ofSize: 10)
-        localBadge.textColor = .systemGreen
-        localBadge.textAlignment = .right
-        contentView.addSubview(localBadge)
+        playingIndicator.frame = CGRect(x: UIScreen.main.bounds.width - 60, y: 20, width: 24, height: 24)
+        playingIndicator.hidesWhenStopped = true
+        contentView.addSubview(playingIndicator)
     }
     required init?(coder: NSCoder) { fatalError() }
 
     func configure(song: Song, index: Int, isCurrent: Bool) {
-        idxLabel.text = isCurrent ? "▶" : "\(index + 1)"
-        idxLabel.textColor = isCurrent ? .systemRed : .darkGray
         titleLabel.text = song.name
-        titleLabel.textColor = isCurrent ? .systemRed : .white
+        titleLabel.textColor = isCurrent ? .systemPink : .label
         artistLabel.text = song.singer
-        localBadge.text = song.isLocal ? "本地" : ""
+        if isCurrent && PlayerManager.shared.isPlaying {
+            playingIndicator.startAnimating()
+            playingIndicator.color = .systemPink
+        } else {
+            playingIndicator.stopAnimating()
+        }
+        let coverPath = song.isLocal ? URL(fileURLWithPath: song.localPath ?? "").deletingLastPathComponent().appendingPathComponent("info.png").path : song.coverUrl
+        if FileManager.default.fileExists(atPath: coverPath), let img = UIImage(contentsOfFile: coverPath) {
+            coverView.image = img
+        } else if let url = URL(string: coverPath) {
+            URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+                if let data = data, let img = UIImage(data: data) {
+                    DispatchQueue.main.async { self?.coverView.image = img }
+                }
+            }.resume()
+        }
     }
 }

@@ -1,122 +1,149 @@
 import UIKit
+import AVFoundation
 
 class PlayerViewController: UIViewController {
-
     private let player = PlayerManager.shared
-    private var coverImageView = UIImageView()
-    private var titleLabel = UILabel()
-    private var artistLabel = UILabel()
-    private var lrcLabel = UILabel()
-    private var progressSlider = UISlider()
-    private var currentTimeLabel = UILabel()
-    private var durationLabel = UILabel()
-    private var playBtn = UIButton()
-    private var prevBtn = UIButton()
-    private var nextBtn = UIButton()
-    private var modeBtn = UIButton()
-    private var downloadBtn = UIButton()
+    private let backgroundImageView = UIImageView()
+    private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
+    private let coverImageView = UIImageView()
+    private let titleLabel = UILabel()
+    private let artistLabel = UILabel()
+    private let lrcLabel = UILabel()
+    private let progressSlider = UISlider()
+    private let currentTimeLabel = UILabel()
+    private let durationLabel = UILabel()
+    private let playBtn = UIButton(type: .system)
+    private let prevBtn = UIButton(type: .system)
+    private let nextBtn = UIButton(type: .system)
+    private let modeBtn = UIButton(type: .system)
+    private let downloadBtn = UIButton(type: .system)
+    private let closeBtn = UIButton(type: .system)
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        view.backgroundColor = .systemBackground
         setupUI()
         setupObservers()
         updateUI()
     }
 
     private func setupUI() {
-        // 毛玻璃背景
-        let blur = UIBlurEffect(style: .dark)
-        let blurView = UIVisualEffectView(effect: blur)
+        // 背景图 + 毛玻璃
+        backgroundImageView.frame = view.bounds
+        backgroundImageView.contentMode = .scaleAspectFill
+        backgroundImageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(backgroundImageView)
+
         blurView.frame = view.bounds
+        blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        blurView.contentView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.5)
         view.addSubview(blurView)
 
+        let w = view.bounds.width
+        let h = view.bounds.height
+
+        // 关闭按钮
+        closeBtn.frame = CGRect(x: w - 56, y: 16, width: 40, height: 40)
+        closeBtn.setImage(UIImage(systemName: "chevron.down"), for: .normal)
+        closeBtn.tintColor = .label
+        closeBtn.addTarget(self, action: #selector(close), for: .touchUpInside)
+        view.addSubview(closeBtn)
+
         // 封面
-        coverImageView.frame = CGRect(x: 60, y: 80, width: view.bounds.width - 120, height: view.bounds.width - 120)
+        let coverSize = min(w - 80, h * 0.38)
+        coverImageView.frame = CGRect(x: (w - coverSize) / 2, y: 70, width: coverSize, height: coverSize)
         coverImageView.contentMode = .scaleAspectFill
-        coverImageView.layer.cornerRadius = 12
+        coverImageView.layer.cornerRadius = 16
         coverImageView.clipsToBounds = true
-        coverImageView.backgroundColor = .darkGray
+        coverImageView.backgroundColor = .systemGray4
+        coverImageView.layer.shadowColor = UIColor.black.cgColor
+        coverImageView.layer.shadowOpacity = 0.3
+        coverImageView.layer.shadowOffset = CGSize(width: 0, height: 8)
+        coverImageView.layer.shadowRadius = 20
         view.addSubview(coverImageView)
 
         // 标题
-        titleLabel.frame = CGRect(x: 20, y: coverImageView.frame.maxY + 24, width: view.bounds.width - 40, height: 28)
-        titleLabel.font = .boldSystemFont(ofSize: 20)
-        titleLabel.textColor = .white
+        titleLabel.frame = CGRect(x: 24, y: coverImageView.frame.maxY + 28, width: w - 48, height: 28)
+        titleLabel.font = .systemFont(ofSize: 22, weight: .bold)
+        titleLabel.textColor = .label
         titleLabel.textAlignment = .center
         view.addSubview(titleLabel)
 
-        artistLabel.frame = CGRect(x: 20, y: titleLabel.frame.maxY + 4, width: view.bounds.width - 40, height: 20)
-        artistLabel.font = .systemFont(ofSize: 14)
-        artistLabel.textColor = .lightGray
+        artistLabel.frame = CGRect(x: 24, y: titleLabel.frame.maxY + 4, width: w - 48, height: 20)
+        artistLabel.font = .systemFont(ofSize: 16)
+        artistLabel.textColor = .secondaryLabel
         artistLabel.textAlignment = .center
         view.addSubview(artistLabel)
 
         // 歌词
-        lrcLabel.frame = CGRect(x: 20, y: artistLabel.frame.maxY + 16, width: view.bounds.width - 40, height: 40)
+        lrcLabel.frame = CGRect(x: 24, y: artistLabel.frame.maxY + 16, width: w - 48, height: 44)
         lrcLabel.font = .systemFont(ofSize: 14)
-        lrcLabel.textColor = .systemRed
+        lrcLabel.textColor = .systemPink
         lrcLabel.textAlignment = .center
         lrcLabel.numberOfLines = 2
         view.addSubview(lrcLabel)
 
         // 进度条
-        progressSlider.frame = CGRect(x: 30, y: lrcLabel.frame.maxY + 20, width: view.bounds.width - 60, height: 30)
-        progressSlider.minimumTrackTintColor = .systemRed
-        progressSlider.maximumTrackTintColor = .darkGray
+        progressSlider.frame = CGRect(x: 28, y: lrcLabel.frame.maxY + 20, width: w - 56, height: 30)
+        progressSlider.minimumTrackTintColor = .systemPink
+        progressSlider.maximumTrackTintColor = .systemGray4
+        progressSlider.thumbTintColor = .systemPink
         progressSlider.addTarget(self, action: #selector(onSliderChange), for: .valueChanged)
         view.addSubview(progressSlider)
 
-        currentTimeLabel.frame = CGRect(x: 30, y: progressSlider.frame.maxY + 4, width: 60, height: 16)
-        currentTimeLabel.font = .systemFont(ofSize: 11)
-        currentTimeLabel.textColor = .gray
+        currentTimeLabel.frame = CGRect(x: 28, y: progressSlider.frame.maxY + 2, width: 60, height: 16)
+        currentTimeLabel.font = .systemFont(ofSize: 12)
+        currentTimeLabel.textColor = .secondaryLabel
         view.addSubview(currentTimeLabel)
 
-        durationLabel.frame = CGRect(x: view.bounds.width - 90, y: progressSlider.frame.maxY + 4, width: 60, height: 16)
-        durationLabel.font = .systemFont(ofSize: 11)
-        durationLabel.textColor = .gray
+        durationLabel.frame = CGRect(x: w - 88, y: progressSlider.frame.maxY + 2, width: 60, height: 16)
+        durationLabel.font = .systemFont(ofSize: 12)
+        durationLabel.textColor = .secondaryLabel
         durationLabel.textAlignment = .right
         view.addSubview(durationLabel)
 
         // 控制按钮
-        let btnY = currentTimeLabel.frame.maxY + 30
-        let btnSize: CGFloat = 50
-        let centerX = view.bounds.width / 2
+        let btnY = currentTimeLabel.frame.maxY + 28
+        let centerX = w / 2
 
-        modeBtn.frame = CGRect(x: centerX - 160, y: btnY + 10, width: 40, height: 40)
-        modeBtn.setTitle("🔁", for: .normal)
-        modeBtn.titleLabel?.font = .systemFont(ofSize: 22)
+        modeBtn.frame = CGRect(x: centerX - 170, y: btnY + 8, width: 44, height: 44)
+        modeBtn.setImage(UIImage(systemName: "repeat"), for: .normal)
+        modeBtn.tintColor = .label
         modeBtn.addTarget(self, action: #selector(switchMode), for: .touchUpInside)
         view.addSubview(modeBtn)
 
-        prevBtn.frame = CGRect(x: centerX - 100, y: btnY, width: btnSize, height: btnSize)
-        prevBtn.setTitle("⏮", for: .normal)
-        prevBtn.titleLabel?.font = .systemFont(ofSize: 28)
-        prevBtn.addTarget(self, action: #selector(prev), for: .touchUpInside)
+        prevBtn.frame = CGRect(x: centerX - 110, y: btnY, width: 56, height: 56)
+        prevBtn.setImage(UIImage(systemName: "backward.fill"), for: .normal)
+        prevBtn.tintColor = .label
+        prevBtn.titleLabel?.font = .systemFont(ofSize: 32)
+        prevBtn.addTarget(self, action: #selector(prevSong), for: .touchUpInside)
         view.addSubview(prevBtn)
 
-        playBtn.frame = CGRect(x: centerX - 30, y: btnY - 5, width: 60, height: 60)
-        playBtn.setTitle("▶️", for: .normal)
-        playBtn.titleLabel?.font = .systemFont(ofSize: 32)
+        playBtn.frame = CGRect(x: centerX - 36, y: btnY - 4, width: 72, height: 72)
+        playBtn.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        playBtn.tintColor = .systemPink
+        playBtn.titleLabel?.font = .systemFont(ofSize: 40)
         playBtn.addTarget(self, action: #selector(togglePlay), for: .touchUpInside)
         view.addSubview(playBtn)
 
-        nextBtn.frame = CGRect(x: centerX + 50, y: btnY, width: btnSize, height: btnSize)
-        nextBtn.setTitle("⏭", for: .normal)
-        nextBtn.titleLabel?.font = .systemFont(ofSize: 28)
+        nextBtn.frame = CGRect(x: centerX + 54, y: btnY, width: 56, height: 56)
+        nextBtn.setImage(UIImage(systemName: "forward.fill"), for: .normal)
+        nextBtn.tintColor = .label
         nextBtn.addTarget(self, action: #selector(nextSong), for: .touchUpInside)
         view.addSubview(nextBtn)
 
-        downloadBtn.frame = CGRect(x: centerX + 120, y: btnY + 10, width: 40, height: 40)
-        downloadBtn.setTitle("⬇️", for: .normal)
-        downloadBtn.titleLabel?.font = .systemFont(ofSize: 22)
+        downloadBtn.frame = CGRect(x: centerX + 126, y: btnY + 8, width: 44, height: 44)
+        downloadBtn.setImage(UIImage(systemName: "arrow.down.circle"), for: .normal)
+        downloadBtn.tintColor = .label
         downloadBtn.addTarget(self, action: #selector(download), for: .touchUpInside)
         view.addSubview(downloadBtn)
     }
 
     private func setupObservers() {
         player.onStateChange = { [weak self] playing in
-            DispatchQueue.main.async { self?.playBtn.setTitle(playing ? "⏸" : "▶️", for: .normal) }
+            DispatchQueue.main.async {
+                self?.playBtn.setImage(UIImage(systemName: playing ? "pause.fill" : "play.fill"), for: .normal)
+            }
         }
         player.onProgress = { [weak self] current, duration in
             DispatchQueue.main.async {
@@ -143,61 +170,57 @@ class PlayerViewController: UIViewController {
         titleLabel.text = song.name
         artistLabel.text = song.singer
         lrcLabel.text = ""
-        playBtn.setTitle(player.isPlaying ? "⏸" : "▶️", for: .normal)
-        modeBtn.setTitle(player.playMode == .listLoop ? "🔁" : player.playMode == .singleLoop ? "🔂" : "🔀", for: .normal)
+        playBtn.setImage(UIImage(systemName: player.isPlaying ? "pause.fill" : "play.fill"), for: .normal)
+        modeBtn.setImage(UIImage(systemName: player.playMode == .listLoop ? "repeat" : player.playMode == .singleLoop ? "repeat.1" : "shuffle"), for: .normal)
+        modeBtn.tintColor = player.playMode == .listLoop ? .label : .systemPink
 
-        // 加载封面
         let coverUrl = song.isLocal ? URL(fileURLWithPath: song.localPath ?? "").deletingLastPathComponent().appendingPathComponent("info.png").path : song.coverUrl
-        if let url = URL(string: coverUrl) {
-            URLSession.shared.dataTask(with: url) { data, _, _ in
+        if FileManager.default.fileExists(atPath: coverUrl), let img = UIImage(contentsOfFile: coverUrl) {
+            coverImageView.image = img
+            backgroundImageView.image = img
+        } else if let url = URL(string: coverUrl) {
+            URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
                 if let data = data, let img = UIImage(data: data) {
-                    DispatchQueue.main.async { self.coverImageView.image = img }
+                    DispatchQueue.main.async {
+                        self?.coverImageView.image = img
+                        self?.backgroundImageView.image = img
+                    }
                 }
             }.resume()
-        } else if FileManager.default.fileExists(atPath: coverUrl), let img = UIImage(contentsOfFile: coverUrl) {
-            coverImageView.image = img
         }
         downloadBtn.isHidden = song.isLocal
+        downloadBtn.setImage(UIImage(systemName: song.isLocal ? "checkmark.circle.fill" : "arrow.down.circle"), for: .normal)
+        downloadBtn.tintColor = song.isLocal ? .systemGreen : .label
     }
 
     @objc private func onSliderChange() {
         player.seek(to: TimeInterval(progressSlider.value) * player.duration)
     }
-
     @objc private func togglePlay() { player.togglePlay() }
-    @objc private func prev() { player.previous() }
+    @objc private func prevSong() { player.previous() }
     @objc private func nextSong() { player.next() }
+    @objc private func close() { dismiss(animated: true) }
 
     @objc private func switchMode() {
         let mode = player.switchPlayMode()
-        modeBtn.setTitle(mode == .listLoop ? "🔁" : mode == .singleLoop ? "🔂" : "🔀", for: .normal)
+        modeBtn.setImage(UIImage(systemName: mode == .listLoop ? "repeat" : mode == .singleLoop ? "repeat.1" : "shuffle"), for: .normal)
+        modeBtn.tintColor = mode == .listLoop ? .label : .systemPink
     }
 
     @objc private func download() {
         guard let song = player.currentSong, !song.isLocal else { return }
-        let alert = UIAlertController(title: "下载", message: "下载到本地播放？", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "下载", style: .default) { _ in
-            CoresDownloader.shared.downloadCore(song: song, progress: { _ in }) { result in
-                DispatchQueue.main.async {
-                    if case .success(let localSong) = result {
-                        // 替换队列中的歌曲为本地版本
-                        if let idx = PlayerManager.shared.queue.firstIndex(of: song) {
-                            PlayerManager.shared.replaceSong(at: idx, with: localSong)
-                        }
-                        self.downloadBtn.isHidden = true
-                        self.showAlert(title: "下载完成", message: "\(localSong.name) 已保存")
+        CoresDownloader.shared.downloadCore(song: song, progress: { _ in }) { [weak self] result in
+            DispatchQueue.main.async {
+                if case .success(let localSong) = result {
+                    if let idx = PlayerManager.shared.queue.firstIndex(of: song) {
+                        PlayerManager.shared.replaceSong(at: idx, with: localSong)
                     }
+                    self?.downloadBtn.isHidden = false
+                    self?.downloadBtn.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .normal)
+                    self?.downloadBtn.tintColor = .systemGreen
                 }
             }
-        })
-        alert.addAction(UIAlertAction(title: "取消", style: .cancel))
-        present(alert, animated: true)
-    }
-
-    private func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "确定", style: .default))
-        present(alert, animated: true)
+        }
     }
 
     private func formatTime(_ t: TimeInterval) -> String {
