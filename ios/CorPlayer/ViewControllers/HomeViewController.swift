@@ -4,7 +4,7 @@ import WebKit
 class HomeViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
 
     private var webView: WKWebView!
-    private let homeURL = "https://music.asinino.cn/app/index.html"
+    private let homeURL = "https://laolllllllll.github.io/CorPlayer/app/index.html"
 
     override func viewDidLoad() {
         super.viewDidLoad()
