@@ -58,6 +58,13 @@ class CoresDownloader {
 
     /// 下载 .core 到本地
     func downloadCore(song: Song, progress: @escaping (Double) -> Void, completion: @escaping (Result<Song, Error>) -> Void) {
+        // 检查是否已存在同名本地歌曲
+        let existing = getLocalSongs().first(where: { $0.name == song.name && $0.singer == song.singer })
+        if let existing = existing, existing.isLocal {
+            progress(1.0)
+            completion(.success(existing))
+            return
+        }
         let songDir = localDir.appendingPathComponent("\(song.singer) - \(song.name).core", isDirectory: true)
         try? FileManager.default.createDirectory(at: songDir, withIntermediateDirectories: true)
 
@@ -125,7 +132,15 @@ class CoresDownloader {
 
     func saveLocalSong(_ song: Song) {
         var songs = getLocalSongs()
-        if !songs.contains(song) { songs.append(song) }
+        // 同名同歌手去重，不重复保存
+        if songs.contains(where: { $0.name == song.name && $0.singer == song.singer }) {
+            // 已存在，更新本地路径
+            if let idx = songs.firstIndex(where: { $0.name == song.name && $0.singer == song.singer }) {
+                songs[idx] = song
+            }
+        } else {
+            songs.append(song)
+        }
         try? JSONEncoder().encode(songs).write(to: localSongsPath)
     }
 

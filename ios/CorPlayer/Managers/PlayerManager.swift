@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import UIKit
+import MediaPlayer
 
 class PlayerManager: NSObject {
     static let shared = PlayerManager()
@@ -12,6 +13,7 @@ class PlayerManager: NSObject {
     private var timeObserver: Any?
     private var lrcLines: [(time: TimeInterval, text: String)] = []
     private let queueLock = NSLock()
+    private var nowPlayingInfo: [String: Any] = [:]
 
     enum PlayMode { case listLoop, singleLoop, shuffle }
     var playMode: PlayMode = .listLoop
@@ -35,6 +37,7 @@ class PlayerManager: NSObject {
     private override init() {
         super.init()
         setupAudioSession()
+        setupRemoteCommandCenter()
     }
 
     private func setupAudioSession() {
@@ -42,6 +45,75 @@ class PlayerManager: NSObject {
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
             try AVAudioSession.sharedInstance().setActive(true)
         } catch { print("AudioSession error: \(error)") }
+    }
+
+    private func setupRemoteCommandCenter() {
+        let center = MPRemoteCommandCenter.shared()
+        center.playCommand.addTarget { [weak self] _ in
+            self?.play()
+            return .success
+        }
+        center.pauseCommand.addTarget { [weak self] _ in
+            self?.pause()
+            return .success
+        }
+        center.togglePlayPauseCommand.addTarget { [weak self] _ in
+            self?.togglePlay()
+            return .success
+        }
+        center.nextTrackCommand.addTarget { [weak self] _ in
+            self?.next()
+            return .success
+        }
+        center.previousTrackCommand.addTarget { [weak self] _ in
+            self?.previous()
+            return .success
+        }
+        center.changePlaybackPositionCommand.addTarget { [weak self] event in
+            if let posEvent = event as? MPChangePlaybackPositionCommandEvent {
+                self?.seek(to: posEvent.positionTime)
+                return .success
+            }
+            return .commandFailed
+        }
+    }
+
+    private func updateNowPlayingInfo(for song: Song) {
+        var info: [String: Any] = [
+            MPMediaItemPropertyTitle: song.name,
+            MPMediaItemPropertyArtist: song.singer,
+            MPMediaItemPropertyAlbumTitle: song.album,
+            MPNowPlayingInfoPropertyPlaybackRate: player?.rate ?? 1.0
+        ]
+        if duration > 0 {
+            info[MPMediaItemPropertyPlaybackDuration] = duration
+            info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentTime
+        }
+        // 加载封面
+        let coverPath = song.isLocal ? URL(fileURLWithPath: song.localPath ?? "").deletingLastPathComponent().appendingPathComponent("info.png").path : song.coverUrl
+        if FileManager.default.fileExists(atPath: coverPath), let img = UIImage(contentsOfFile: coverPath) {
+            if #available(iOS 16.0, *) {
+                info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: img.size) { _ in img }
+            } else {
+                info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(image: img)
+            }
+        } else if let url = URL(string: coverPath) {
+            URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+                if let data = data, let img = UIImage(data: data) {
+                    DispatchQueue.main.async {
+                        var updatedInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? info
+                        if #available(iOS 16.0, *) {
+                            updatedInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: img.size) { _ in img }
+                        } else {
+                            updatedInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(image: img)
+                        }
+                        MPNowPlayingInfoCenter.default().nowPlayingInfo = updatedInfo
+                    }
+                }
+            }.resume()
+        }
+        nowPlayingInfo = info
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }
 
     func setQueue(_ songs: [Song], playAt index: Int = 0) {
@@ -132,6 +204,7 @@ class PlayerManager: NSObject {
             self.setupTimeObserver()
             self.onSongChange?(song)
             self.onStateChange?(true)
+            self.updateNowPlayingInfo(for: song)
         }
     }
 
@@ -218,6 +291,13 @@ class PlayerManager: NSObject {
             guard let self = self else { return }
             self.onProgress?(time.seconds, self.duration)
             self.updateLrc(at: time.seconds)
+            // 更新系统播放信息进度
+            if var info = MPNowPlayingInfoCenter.default().nowPlayingInfo {
+                info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = time.seconds
+                info[MPMediaItemPropertyPlaybackDuration] = self.duration
+                info[MPNowPlayingInfoPropertyPlaybackRate] = self.player?.rate ?? 1.0
+                MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+            }
         }
     }
 

@@ -4,7 +4,9 @@ import WebKit
 class HomeViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
 
     private var webView: WKWebView!
-    private let homeURL = "https://laolllllllll.github.io/CorPlayer/app/index.html"
+    private var homeURL: String {
+        UserDefaults.standard.string(forKey: "corplayer_home_url") ?? "https://laolllllllll.github.io/CorPlayer/app/index.html"
+    }
     private var loadingAlert: UIAlertController?
 
     override func viewDidLoad() {
@@ -43,7 +45,8 @@ class HomeViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, 
             handleCoreUrl(body)
         } else if let dict = message.body as? [String: Any], let type = dict["type"] as? String {
             if type == "queue", let data = dict["data"] as? String {
-                handleQueueData(data)
+                let save = dict["saveFile"] as? Bool ?? false
+                handleQueueData(data, saveFile: save)
             } else if type == "play", let url = dict["url"] as? String {
                 handleCoreUrl(url)
             }
@@ -92,12 +95,18 @@ class HomeViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, 
         }
     }
 
-    private func handleQueueData(_ base64String: String) {
+    private func handleQueueData(_ base64String: String, saveFile: Bool = false) {
         guard let data = Data(base64Encoded: base64String),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let songs = json["songs"] as? [[String: Any]] else {
             showAlert(title: "队列解析失败", message: "无法解析duilie.json")
             return
+        }
+        // 保存 duilie.json 到 Documents
+        if saveFile {
+            let docsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let filePath = docsPath.appendingPathComponent("duilie.json")
+            try? data.write(to: filePath)
         }
         var resolvedSongs: [Song] = []
         let group = DispatchGroup()

@@ -180,21 +180,20 @@ function playAllHot(){
     }))
   };
   const jsonStr = JSON.stringify(queueData, null, 2);
-  const blob = new Blob([jsonStr], {type: 'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'duilie.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
   const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
-  setTimeout(() => {
-    if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.corPlayer){
-      window.webkit.messageHandlers.corPlayer.postMessage({type:'queue', data: base64});
-    } else {
-      window.location.href = 'cormusic://queue?data=' + encodeURIComponent(base64);
-    }
-  }, 300);
+  // 通过JS桥接传给APP，由APP保存duilie.json并播放（避免WKWebView下载导致页面跳转）
+  if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.corPlayer){
+    window.webkit.messageHandlers.corPlayer.postMessage({type:'queue', data: base64, saveFile: true});
+  } else {
+    // 降级：下载文件（可能导致页面跳转，仅作备用）
+    const blob = new Blob([jsonStr], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'duilie.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 }
 
 // 检查URL参数是否有播放请求

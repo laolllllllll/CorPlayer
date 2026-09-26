@@ -29,13 +29,14 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
         view.addSubview(tableView)
     }
 
-    func numberOfSections(in tableView: UITableView) -> Int { return 3 }
+    func numberOfSections(in tableView: UITableView) -> Int { return 4 }
 
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0: return "播放设置"
         case 1: return localSongs.isEmpty ? nil : "本地音乐 (\(localSongs.count))"
         case 2: return "关于"
+        case 3: return "设置"
         default: return ""
         }
     }
@@ -45,6 +46,7 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
         case 0: return 1
         case 1: return max(localSongs.count, 1)
         case 2: return 1
+        case 3: return 2
         default: return 0
         }
     }
@@ -81,6 +83,28 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
         cell.detailTextLabel?.textColor = .secondaryLabel
         cell.selectionStyle = .none
         return cell
+        }
+        if indexPath.section == 3 {
+            if indexPath.row == 0 {
+                let cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
+                cell.backgroundColor = .secondarySystemGroupedBackground
+                cell.textLabel?.text = "首页链接"
+                cell.textLabel?.textColor = .label
+                let currentURL = UserDefaults.standard.string(forKey: "corplayer_home_url") ?? "默认"
+                cell.detailTextLabel?.text = currentURL == "https://laolllllllll.github.io/CorPlayer/app/index.html" ? "默认" : "自定义"
+                cell.detailTextLabel?.textColor = .systemPink
+                cell.accessoryType = .disclosureIndicator
+                return cell
+            } else {
+                let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+                cell.backgroundColor = .secondarySystemGroupedBackground
+                cell.textLabel?.text = "恢复默认首页"
+                cell.textLabel?.textColor = .systemRed
+                cell.textLabel?.textAlignment = .center
+                return cell
+            }
+        }
+        return UITableViewCell()
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -93,6 +117,14 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
             tableView.reloadRows(at: [indexPath], with: .none)
         } else if indexPath.section == 1, !localSongs.isEmpty {
             player.setQueue(localSongs, playAt: indexPath.row)
+        } else if indexPath.section == 3 {
+            if indexPath.row == 0 {
+                showHomeURLSetting()
+            } else {
+                UserDefaults.standard.removeObject(forKey: "corplayer_home_url")
+                showAlert(title: "已恢复默认", message: "重启APP后生效")
+                tableView.reloadData()
+            }
         }
     }
 
@@ -107,6 +139,35 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
 
     func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
         return "删除"
+    }
+
+    private func showHomeURLSetting() {
+        let alert = UIAlertController(title: "设置首页链接", message: "请输入新的首页链接，必须以 .html 结尾", preferredStyle: .alert)
+        alert.addTextField { field in
+            field.placeholder = "https://example.com/index.html"
+            field.text = UserDefaults.standard.string(forKey: "corplayer_home_url") ?? ""
+            field.keyboardType = .URL
+            field.autocapitalizationType = .none
+            field.autocorrectionType = .no
+        }
+        alert.addAction(UIAlertAction(title: "保存", style: .default) { _ in
+            guard let url = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines), !url.isEmpty else { return }
+            if !url.lowercased().hasSuffix(".html") {
+                self.showAlert(title: "格式错误", message: "首页链接必须以 .html 结尾")
+                return
+            }
+            UserDefaults.standard.set(url, forKey: "corplayer_home_url")
+            self.showAlert(title: "保存成功", message: "重启APP后生效\n新首页: \(url)")
+            self.tableView.reloadData()
+        })
+        alert.addAction(UIAlertAction(title: "取消", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "确定", style: .default))
+        present(alert, animated: true)
     }
 
     private func playModeText() -> String { modeText(player.playMode) }

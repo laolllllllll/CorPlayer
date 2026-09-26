@@ -22,6 +22,7 @@ class PlayerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        isModalInPresentation = false
         setupUI()
         setupObservers()
         updateUI()
@@ -44,8 +45,10 @@ class PlayerViewController: UIViewController {
 
         // 关闭按钮
         closeBtn.frame = CGRect(x: w - 56, y: 16, width: 40, height: 40)
-        closeBtn.setImage(UIImage(systemName: "chevron.down"), for: .normal)
-        closeBtn.tintColor = .label
+        closeBtn.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+        closeBtn.tintColor = .systemGray
+        closeBtn.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.6)
+        closeBtn.layer.cornerRadius = 20
         closeBtn.addTarget(self, action: #selector(close), for: .touchUpInside)
         view.addSubview(closeBtn)
 
@@ -137,6 +140,8 @@ class PlayerViewController: UIViewController {
         downloadBtn.tintColor = .label
         downloadBtn.addTarget(self, action: #selector(download), for: .touchUpInside)
         view.addSubview(downloadBtn)
+        // 确保关闭按钮在最上层可点击
+        view.bringSubviewToFront(closeBtn)
     }
 
     private func setupObservers() {

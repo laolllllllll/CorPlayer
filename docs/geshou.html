@@ -65,7 +65,6 @@ function play(coreUrl){
 
 function playAll(){
   if(currentSongs.length === 0){ alert('暂无歌曲'); return; }
-  // 生成队列详情
   const queueData = {
     name: name + ' - 全部歌曲',
     type: 'queue',
@@ -78,23 +77,19 @@ function playAll(){
     }))
   };
   const jsonStr = JSON.stringify(queueData, null, 2);
-  // 静态本地生成 duilie.json 并下载
-  const blob = new Blob([jsonStr], {type: 'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'duilie.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  // 通过 cormusic://queue 协议传递队列给APP
   const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
-  setTimeout(() => {
-    if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.corPlayer){
-      window.webkit.messageHandlers.corPlayer.postMessage({type:'queue', data: base64});
-    } else {
-      window.location.href = 'cormusic://queue?data=' + encodeURIComponent(base64);
-    }
-  }, 300);
+  // 通过JS桥接传给APP，由APP保存duilie.json并播放
+  if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.corPlayer){
+    window.webkit.messageHandlers.corPlayer.postMessage({type:'queue', data: base64, saveFile: true});
+  } else {
+    const blob = new Blob([jsonStr], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'duilie.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 }
 </script>
 </body>
