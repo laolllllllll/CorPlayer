@@ -1,0 +1,41 @@
+name: CorPlayer
+options:
+  bundleIdPrefix: com.cor
+  deploymentTarget:
+    iOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    CODE_SIGNING_ALLOWED: "NO"
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGN_IDENTITY: ""
+    DEVELOPMENT_TEAM: ""
+    ENABLE_BITCODE: "NO"
+    ARCHS: "arm64"
+    VALID_ARCHS: "arm64"
+    ONLY_ACTIVE_ARCH: "NO"
+    SKIP_INSTALL: "NO"
+    INSTALL_PATH: "/Applications"
+targets:
+  CorPlayer:
+    type: application
+    platform: iOS
+    sources:
+      - path: CorPlayer
+    resources:
+      - path: CorPlayer/Resources
+    info:
+      path: CorPlayer/Resources/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cor.player
+        INFOPLIST_KEY_CFBundleDisplayName: CorPlayer
+        INFOPLIST_KEY_UILaunchStoryboardName: ""
+        INFOPLIST_KEY_UIRequiredDeviceCapabilities: [arm64]
+        INFOPLIST_KEY_NSAppTransportSecurity: {NSAllowsArbitraryLoads: true}
+        INFOPLIST_KEY_CFBundleURLTypes:
+          - CFBundleURLName: cormusic
+            CFBundleURLSchemes: [cormusic]
+        INFOPLIST_KEY_UIBackgroundModes: [audio]

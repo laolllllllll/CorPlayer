@@ -1,0 +1,18 @@
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+build/
+DerivedData/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Data
+website/data/*.json
+website/uploads/
+
+# OS
+.DS_Store
