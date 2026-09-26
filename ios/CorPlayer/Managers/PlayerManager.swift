@@ -78,6 +78,12 @@ class PlayerManager: NSObject {
         else if from > currentIndex && to <= currentIndex { currentIndex += 1 }
     }
 
+    func replaceSong(at index: Int, with song: Song) {
+        guard index >= 0, index < queue.count else { return }
+        queue[index] = song
+        if index == currentIndex { onSongChange?(song) }
+    }
+
     // MARK: - 播放控制
     func play(song: Song) {
         guard let url = song.isLocal ? URL(fileURLWithPath: song.localPath ?? "") : URL(string: song.mp3Url) else { return }

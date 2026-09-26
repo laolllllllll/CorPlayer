@@ -98,7 +98,6 @@ class MeViewController: UIViewController, UITableViewDataSource, UITableViewDele
             showAlert(title: "播放模式", message: modeText(mode))
             tableView.reloadRows(at: [indexPath], with: .none)
         } else if indexPath.section == 1, !localSongs.isEmpty {
-            let song = localSongs[indexPath.row]
             player.setQueue(localSongs, playAt: indexPath.row)
         }
     }

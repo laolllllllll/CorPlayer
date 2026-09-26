@@ -12,7 +12,7 @@ class CoresDownloader {
 
     /// 解析 .core URL，递归处理云端重定向，最终返回 Song
     func resolveCore(url coreUrl: String, completion: @escaping (Result<Song, Error>) -> Void) {
-        var url = coreUrl.hasSuffix("/") ? coreUrl : coreUrl + "/"
+        let url = coreUrl.hasSuffix("/") ? coreUrl : coreUrl + "/"
         resolveRecursive(url: url, depth: 0, completion: completion)
     }
 

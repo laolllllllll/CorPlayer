@@ -93,13 +93,19 @@ class HomeViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
         present(alert, animated: true)
     }
 
+    private var loadingAlert: UIAlertController?
+
     private func downloadAndPlay(song: Song) {
-        let hud = showLoading("下载中...")
+        loadingAlert = UIAlertController(title: nil, message: "下载中 0%", preferredStyle: .alert)
+        present(loadingAlert!, animated: true)
         CoresDownloader.shared.downloadCore(song: song, progress: { p in
-            DispatchQueue.main.async { hud.text = "下载中 \(Int(p*100))%" }
+            DispatchQueue.main.async {
+                self.loadingAlert?.message = "下载中 \(Int(p*100))%"
+            }
         }) { result in
             DispatchQueue.main.async {
-                hud.dismiss(animated: false)
+                self.loadingAlert?.dismiss(animated: false)
+                self.loadingAlert = nil
                 switch result {
                 case .success(let localSong):
                     PlayerManager.shared.addToQueue(localSong)
@@ -119,11 +125,5 @@ class HomeViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "确定", style: .default))
         present(alert, animated: true)
-    }
-
-    private func showLoading(_ text: String) -> UIAlertController {
-        let alert = UIAlertController(title: nil, message: text, preferredStyle: .alert)
-        present(alert, animated: true)
-        return alert
     }
 }

@@ -32,6 +32,6 @@ class LrcParser {
                 }
             }
         }
-        return lines.sorted { $0.time < $1.time }
+        return lines.sorted(by: { $0.0 < $1.0 })
     }
 }

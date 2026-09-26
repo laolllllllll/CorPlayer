@@ -41,7 +41,7 @@ class PlayerBar: UIView {
         nextBtn.frame = CGRect(x: width - 56, y: 13, width: 36, height: 36)
         nextBtn.setTitle("⏭", for: .normal)
         nextBtn.titleLabel?.font = .systemFont(ofSize: 20)
-        nextBtn.addTarget(self, action: #selector(next), for: .touchUpInside)
+        nextBtn.addTarget(self, action: #selector(nextSong), for: .touchUpInside)
         addSubview(nextBtn)
 
         playBtn.frame = CGRect(x: width - 100, y: 13, width: 36, height: 36)
@@ -75,7 +75,7 @@ class PlayerBar: UIView {
         artistLabel.text = song.singer
         playBtn.setTitle(player.isPlaying ? "⏸" : "▶️", for: .normal)
 
-        let coverPath = song.isLocal ? URL(fileURLWithPath: song.localPath ?? "").deletingLastPathComponent.appendingPathComponent("info.png").path : song.coverUrl
+        let coverPath = song.isLocal ? URL(fileURLWithPath: song.localPath ?? "").deletingLastPathComponent().appendingPathComponent("info.png").path : song.coverUrl
         if FileManager.default.fileExists(atPath: coverPath), let img = UIImage(contentsOfFile: coverPath) {
             coverView.image = img
         } else if let url = URL(string: coverPath) {
@@ -88,6 +88,6 @@ class PlayerBar: UIView {
     }
 
     @objc private func toggle() { player.togglePlay() }
-    @objc private func next() { player.next() }
+    @objc private func nextSong() { player.next() }
     @objc private func barTapped() { onTap?() }
 }

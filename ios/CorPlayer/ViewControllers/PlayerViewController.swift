@@ -104,7 +104,7 @@ class PlayerViewController: UIViewController {
         nextBtn.frame = CGRect(x: centerX + 50, y: btnY, width: btnSize, height: btnSize)
         nextBtn.setTitle("⏭", for: .normal)
         nextBtn.titleLabel?.font = .systemFont(ofSize: 28)
-        nextBtn.addTarget(self, action: #selector(next), for: .touchUpInside)
+        nextBtn.addTarget(self, action: #selector(nextSong), for: .touchUpInside)
         view.addSubview(nextBtn)
 
         downloadBtn.frame = CGRect(x: centerX + 120, y: btnY + 10, width: 40, height: 40)
@@ -147,7 +147,7 @@ class PlayerViewController: UIViewController {
         modeBtn.setTitle(player.playMode == .listLoop ? "🔁" : player.playMode == .singleLoop ? "🔂" : "🔀", for: .normal)
 
         // 加载封面
-        let coverUrl = song.isLocal ? URL(fileURLWithPath: song.localPath ?? "").deletingLastPathComponent.appendingPathComponent("info.png").path : song.coverUrl
+        let coverUrl = song.isLocal ? URL(fileURLWithPath: song.localPath ?? "").deletingLastPathComponent().appendingPathComponent("info.png").path : song.coverUrl
         if let url = URL(string: coverUrl) {
             URLSession.shared.dataTask(with: url) { data, _, _ in
                 if let data = data, let img = UIImage(data: data) {
@@ -166,7 +166,7 @@ class PlayerViewController: UIViewController {
 
     @objc private func togglePlay() { player.togglePlay() }
     @objc private func prev() { player.previous() }
-    @objc private func next() { player.next() }
+    @objc private func nextSong() { player.next() }
 
     @objc private func switchMode() {
         let mode = player.switchPlayMode()
@@ -182,7 +182,7 @@ class PlayerViewController: UIViewController {
                     if case .success(let localSong) = result {
                         // 替换队列中的歌曲为本地版本
                         if let idx = PlayerManager.shared.queue.firstIndex(of: song) {
-                            PlayerManager.shared.queue[idx] = localSong
+                            PlayerManager.shared.replaceSong(at: idx, with: localSong)
                         }
                         self.downloadBtn.isHidden = true
                         self.showAlert(title: "下载完成", message: "\(localSong.name) 已保存")
